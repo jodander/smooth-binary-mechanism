@@ -42,13 +42,13 @@ def power_2_iterator(end = None):
     '''Iterate over non-negative powers of 2 in increasing order
 
     Parameters:
-    end: only numbers up to end-1 are output (optional, default is None)
+    end: only numbers up to end are output (optional, default is None)
 
     Returns:
     an iterator object for the sequence
     '''
     x = 1
-    while (end is None) or (x < end):
+    while (end is None) or (x <= end):
         yield x
         x *= 2
 
@@ -80,7 +80,7 @@ def smooth_binary_mechanism_noise(T, rho = 1., dimensions = 1, noise_generator =
 
     # Initialization
     depth = 0
-    while comb(depth, depth//2) <= length: # find smallest tree with > T balanced leaves
+    while comb(depth, depth//2) <= T: # find smallest tree with > T balanced leaves
         depth += 2
     variance = depth/(4*rho) # variance per node to achieve rho-zCDP
     noise = {} # dictionary mapping node depths to noise
@@ -89,7 +89,7 @@ def smooth_binary_mechanism_noise(T, rho = 1., dimensions = 1, noise_generator =
     # Iteration
     n = neutral_element # Current noise value, always equal to sum of values in noise dict
     l1, l2 = None, 0 # Two adjacent leaves currently considered, paths encoded in binary
-    for _ in range(length):
+    for _ in range(T):
         l1, l2 = l2, next(leaves)
         for b in power_2_iterator(l1 ^ l2): # Iterate over bit positions after longest common prefix
             if b & l1 > 0: # Remove nodes from path to previous leaf l1
@@ -127,16 +127,16 @@ def binary_mechanism_noise(T, rho = 1., dimensions = 1, noise_generator = np.ran
 
     # Initialization
     depth = 0
-    while 2**depth <= length: # find smallest tree with > T leaves
+    while 2**depth <= T: # find smallest tree with > T leaves
         depth += 1
     variance = depth/(2*rho) # variance per node to achieve rho-zCDP
     noise = {} # dictionary mapping node depths to noise
-    leaves = iter(range(1, length+1))
+    leaves = iter(range(1, T+1))
 
     # Iteration
     n = neutral_element # Current noise value, always equal to sum of values in noise dict
     l1, l2 = None, 0 # Two adjacent leaves currently considered, paths encoded in binary
-    for _ in range(length): # Invariant: 1s in l2 have stored noise, summing to n
+    for _ in range(T): # Invariant: 1s in l2 have stored noise, summing to n
         l1, l2 = l2, next(leaves)
         for b in power_2_iterator(l1 ^ l2): # Iterate over bit positions after longest common prefix
             if b & l1 > 0: # Remove nodes from path to previous leaf
