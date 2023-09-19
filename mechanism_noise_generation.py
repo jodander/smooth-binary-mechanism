@@ -88,7 +88,15 @@ def smooth_binary_mechanism_noise(T, rho = 1., dimensions = 1, noise_generator =
 
     # Iteration
     n = neutral_element # Current noise value, always equal to sum of values in noise dict
-    l1, l2 = None, 0 # Two adjacent leaves currently considered, paths encoded in binary
+    l1, l2 = 0, next(leaves) # Two adjacent leaves currently considered, paths encoded in binary
+
+    # Initialize noise
+    # NOTE: The first balanced leaf is not used for any query
+    for b in power_2_iterator(l1 ^ l2): # Iterate over bit positions after longest common prefix
+        if b & l2 > 0: # Add nodes from path to next leaf l2
+            noise[b] = noise_generator(0, variance, size=dimensions)
+            n += noise[b]
+
     for _ in range(T):
         l1, l2 = l2, next(leaves)
         for b in power_2_iterator(l1 ^ l2): # Iterate over bit positions after longest common prefix
